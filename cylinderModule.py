@@ -169,11 +169,18 @@ class LIAproblem2D():
       vals, vecs = la.eigs(A, k=k, M=M, sigma=sigma,  ncv=ncv, maxiter=40, tol=10e-10) 
       
       file = open(self.respath+"evals.dat","w")
-      abs_vals = []
-      for val in vals:
-          absolute_val = np.real(val)**2 + np.imag(val)**2
-          abs_vals.append(absolute_val)
-          print(np.real(val), np.imag(val))
+        
+      #lista associando autovalores e autovetores  
+      valvec = []  
+      for jj in range(vals):
+            abs_val = (np.real(vals[jj])**2 + np.imag(vals[jj])**2)**0.5
+            valvec.append([jj, vals[jj], vecs[jj], abs_val])
+            
+      valvec.sort(key = lambda x: x[3])
+      
+            
+      for val in valvec:
+          print(val[3], val[1], val[2])
           file.write("%s\n" % val)
       file.close()   
       
@@ -249,6 +256,8 @@ class LIAproblem2D():
           cs=plot((u.sub(0)**2+u.sub(1)**2)**(1/2))
           #plt.show()
           plt.savefig('u_mag{0}.png'.format(t))
+          
+          grid_u_x, grid_u_y = interpolator.gradient(grid_x, grid_y)
           #fig.savefig('fig{0}.jpg'.format(t))
           
       File(dnspath+"solution.xml") << up.vector()
