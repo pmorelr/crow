@@ -256,7 +256,7 @@ class LIAproblem2D():
     plt.title('Growth rate vs Wave number', fontdict=font)
     plt.xlabel('Wave number value', fontdict=font)
     plt.ylabel('Imaginary component of the eigenvalue', fontdict=font)
-    plt.plot(k_list, im_val, 'k')
+    plt.plot(kk_list, im_val, 'k')
  
     plt.savefig('k_im.png', dpi= 300)
         
