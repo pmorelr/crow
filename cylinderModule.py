@@ -35,12 +35,16 @@ class LIAproblem2D():
       #   return ((x[0]+0.25)**2+x[1]**2)**0.5 < 0.01001 and on_boundary
       #def cylinder2(x, on_boundary):
       #   return ((x[0]-0.25)**2+x[1]**2)**0.5 < 0.01001 and on_boundary
-      def inlet(x, on_boundary):       
-         return x[0] < (-0.9999) and on_boundary
-      def outlet(x, on_boundary):         
-         return x[0] > (0.9999) and on_boundary
-      def upperandlower(x, on_boundary):
-         return np.abs(x[1]) > 0.9999 and on_boundary
+      def left(x, on_boundary):       
+         return x[0] < (-1.9999) and on_boundary
+      #def outlet(x, on_boundary):         
+         #return x[0] > (0.9999) and on_boundary
+      def upper(x, on_boundary):
+         return x[1] > 1.9999 and on_boundary 
+      def lower(x, on_boundary):
+         return x[1] < -1.9999 and on_boundary
+      def symmetry(x, on_boundary):
+         return x[0] > -0.0001 and on_boundary
       # define boundary conditions for baseflow & DNS
     
       
@@ -52,17 +56,21 @@ class LIAproblem2D():
       #coreu  = Expression(("1/x[1]","-1/x[0]"), degree=2)
       #bcu    = DirichletBC(X.sub(0), coreu)
       
-      #bcs_inflow = DirichletBC(X.sub(0).sub(1), 0, inlet)
-      #bcs_outflow = DirichletBC(X.sub(0).sub(1), 0, outlet)
-      #bcs_upperandlower=DirichletBC(X.sub(0).sub(1), 0, upperandlower)
-      self.bcs = []#bcs_outflow,bcs_inflow,bcs_upperandlower]
+      #bcs_left = DirichletBC(X.sub(1), 0, left)
+      #bcs_upper = DirichletBC(X.sub(1), 0, upper)
+      #bcs_lower = DirichletBC(X.sub(1), 0, lower)
+      bcs_symmetry = DirichletBC(X.sub(0).sub(0), Constant(0.0), symmetry)
+      self.bcs = [bcs_symmetry]#bcs_left,bcs_upper,bcs_lower]
       
       # define boundary conditions for perturbations
       #bcp_cyl=DirichletBC(X.sub(0), (0,0), cylinder)
-      bcp_inflow = DirichletBC(X.sub(0).sub(1), 0, inlet)
-      bcp_outflow = DirichletBC(X.sub(0).sub(1), 0, outlet)
-      bcp_upperandlower=DirichletBC(X.sub(0).sub(1), 0, upperandlower)
-      self.bcp = [bcp_outflow,bcp_inflow,bcp_upperandlower]
+      bcp_left= DirichletBC(X.sub(1), 0, left)
+      bcp_upper = DirichletBC(X.sub(1), 0, upper)
+      bcp_lower = DirichletBC(X.sub(1), 0, lower)
+      bcp_symmetry = DirichletBC(X.sub(0).sub(1), Constant(0.0), symmetry)
+      self.bcp = [bcp_left,bcp_upper,bcp_lower,bcp_symmetry]
+
+
 
 # solves steady state equations
    def steady_state(self):
@@ -176,13 +184,13 @@ class LIAproblem2D():
       valvec = []  
       for jj in range(vals):
             im_val = np.imag(vals[jj])
-            valvec.append([jj, vals[jj], vecs[jj], im_val])
+            valvec.append([jj, vals[jj], im_val])
             
-      valvec.sort(key = lambda x: x[3])
+      valvec.sort(key = lambda x: x[2])
       
             
       for val in valvec:
-          print(val[3], val[1], val[2])
+          print(val[2], val[1])
           file.write("%s\n" % val)
       file.close()   
       
@@ -278,11 +286,11 @@ class LIAproblem2D():
       t = 0.
       it = 0
       ifile = 0
-      #U_init = Expression(("1.","0.05*exp(-(x[0]-0.5)*(x[0]-0.5)/0.2 - x[1]*x[1]/0.2)","0"),  degree=2)
+            #U_init = Expression(("1.","0.05*exp(-(x[0]-0.5)*(x[0]-0.5)/0.2 - x[1]*x[1]/0.2)","0"),  degree=2)
       #U_init = Expression(("x[1]*(sqrt(x[0]*x[0]+x[1]*x[1])<0.5)+(0.5*0.5*x[1])/(x[0]*x[0]+x[1]*x[1])*(sqrt(x[0]*x[0]+x[1]*x[1])>0.5)","-x[0]*(sqrt(x[0]*x[0]+x[1]*x[1])<0.5)-(0.5*0.5*x[0])/(x[0]*x[0]+x[1]*x[1])*(sqrt(x[0]*x[0]+x[1]*x[1])>0.5)","0."),  degree=2)
       #U_init = Expression(("-om*x[1]*(sqrt((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])<a) -(om*a*a*x[1])/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])*(sqrt((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])>a) +om*x[1]*(sqrt((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])<a) +(om*a*a*x[1])/((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])*(sqrt((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])>a)","om*x[0]*(sqrt((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])<a) +(om*a*a*x[0])/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])*(sqrt((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])>a) -om*x[0]*(sqrt((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])<a) -(om*a*a*x[0])/((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])*(sqrt((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])>a)","0."),om=1., a=0.2, b=1., degree=2)
       #U_init = Expression(("-om*a*a*x[1]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])*(1-exp(-1*((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])/(a*a)) + om*a*a*x[1]/((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])*(1-exp(-1*((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])/(a*a)))","om*a*a*x[0]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])*(1-exp(-1*((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])/(a*a))) - om*a*a*x[0]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])*(1-exp(-1*((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])/(a*a)))","0."), om=1., a=0.1, b=1., degree=2)
-      U_init = Expression(("-om*a*a*x[1]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1] + 1e-3)*(1-exp(-1*((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])/(a*a))) + om*a*a*x[1]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1] + 1e-3)*(1-exp(-1*((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])/(a*a)))","om*a*a*x[0]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1]+ 1e-3)*(1-exp(-1*((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])/(a*a))) - om*a*a*x[0]/((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1]+ 1e-3)*(1-exp(-1*((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])/(a*a)))","0."), om=1., a=0.1, b=1., degree=2)
+      U_init = Expression(("-om*a*a*x[1]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1] + 1e-3)*(1-exp(-1*((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])/(a*a)))","om*a*a*x[0]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1]+ 1e-3)*(1-exp(-1*((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])/(a*a)))","0."), om=1., a=0.1, b=-1., degree=2)
          
       #U_init = Expression(("(-om*a*a*x[1]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1] + 1e-3)*(1-exp(-1*((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])/(a*a))) * ((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1] > 0.01) + om*a*a*x[1]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])*(1-exp(-1*((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])/(a*a))))*((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1] > 0.01)","om*a*a*x[0]/((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])*(1-exp(-1*((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1])/(a*a)))* ((x[0]-b/2)*(x[0]-b/2)+x[1]*x[1] > 0.01) -om*a*a*x[0]/((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])*(1-exp(-1*((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1])/(a*a)))*((x[0]+b/2)*(x[0]+b/2)+x[1]*x[1] > 0.01)","0."), om=1., a=0.1, b=1., degree=2)
 
