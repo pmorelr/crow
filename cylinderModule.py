@@ -10,6 +10,8 @@ import scipy.io as sio
 import scipy.sparse.linalg as la
 import time
 import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
 
 ######################################### Cartesian Homogeneous 2 Components ####################################
 class LIAproblem2D():
@@ -194,6 +196,74 @@ class LIAproblem2D():
           File(self.respath+"evec_p_"+str(i+1)+".pvd") << p
       
       return(max(abs_vals))
+    
+    
+       # Compute k eigenvalues/vectors   
+   def eigenvalues_k(self, sigma, k, kk_list):
+    im_vals = []
+    for kk in kk_list:
+        parameters['linear_algebra_backend'] = 'Eigen'
+
+        Re = Constant(self.Re)
+        self.kk=kk
+        kk = Constant(self.kk)
+
+        # load baseflow
+        ups = Function(self.X)
+        File(self.respath+"solution.xml") >> ups.vector()
+        us= as_vector((ups[0],ups[1]));
+
+        u,w,p = TrialFunctions(self.X3)
+        v,j,q = TestFunctions(self.X3)
+
+        # define RHS matrix
+        Ma = assemble(inner(u,v)*dx + inner(w,j)*dx) ###mod
+        # Convert to sparse format
+        rows, cols, values = as_backend_type(Ma).data()
+        Ma = sps.csr_matrix((values, cols, rows))
+
+        # define LHS matrix
+        Aform = - inner(grad(u)*us, v)*dx - inner(grad(us)*u, v)*dx \
+              + div(v)*p*dx - 1/Re*(inner(grad(u), grad(v))-kk**2*dot(u,v))*dx \
+              - inner(dot(grad(w),us),j)*dx - 1/Re*(inner(grad(w), grad(j))-kk**2*w*j)*dx - kk*p*j*dx \
+              + (div(u)-kk*w)*q*dx
+        Aa = assemble(Aform)
+        # Convert to sparse format
+        rows, cols, values = as_backend_type(Aa).data()
+        Aa = sps.csr_matrix((values, cols, rows))
+
+        # remove Dirichlet points from the system
+        freeinds,pinds = self.get_indices() 
+        M = Ma[freeinds,:][:,freeinds]
+        A = Aa[freeinds,:][:,freeinds]
+
+
+        if k>0:
+          # Compute eigenvalues/vectors of (A,M)
+          ncv = np.max([10,2*k]) # number of Krylov vectors
+          vals, vecs = la.eigs(A, k=k, M=M, sigma=sigma,  ncv=ncv, maxiter=40, tol=10e-10) 
+
+          im_vals1 = [] 
+          for jj in range(vals):
+                im_vals1.append(np.imag(vals[jj]))
+
+          max_im_val = max(im_vals1)
+        
+        im_val.append(max_im_val)
+        
+    plt.figure(figsize=(7, 9))
+    
+    plt.title('Growth rate vs Wave number', fontdict=font)
+    plt.xlabel('Wave number value', fontdict=font)
+    plt.ylabel('Imaginary component of the eigenvalue', fontdict=font)
+    plt.plot(k_list, im_val, 'k')
+ 
+    plt.savefig('k_im.png', dpi= 300)
+        
+    
+
+   
+    
           
 #--------------------------------------------------------------------------
 
