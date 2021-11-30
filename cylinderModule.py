@@ -63,12 +63,13 @@ class LIAproblem2D():
       self.bcs = [bcs_symmetry]#bcs_left,bcs_upper,bcs_lower]
       
       # define boundary conditions for perturbations
+     # comentados:
       #bcp_cyl=DirichletBC(X.sub(0), (0,0), cylinder)
-      bcp_left= DirichletBC(X.sub(1), 0, left)
-      bcp_upper = DirichletBC(X.sub(1), 0, upper)
-      bcp_lower = DirichletBC(X.sub(1), 0, lower)
+      #bcp_left= DirichletBC(X.sub(1), 0, left)
+     # bcp_upper = DirichletBC(X.sub(1), 0, upper)
+     # bcp_lower = DirichletBC(X.sub(1), 0, lower)
       bcp_symmetry = DirichletBC(X.sub(0).sub(1), Constant(0.0), symmetry)
-      self.bcp = [bcp_left,bcp_upper,bcp_lower,bcp_symmetry]
+      self.bcp = [bcp_symmetry]#bcp_upper,bcp_lower,bcp_symmetry]
 
 
 
@@ -125,7 +126,7 @@ class LIAproblem2D():
 
       # total number of dofs
       N = self.X.dim()
-      
+      #bcp_left
       # indices of free nodes
       freeinds = np.setdiff1d(range(N),bcinds,assume_unique=True).astype(np.int32)
 
@@ -182,7 +183,7 @@ class LIAproblem2D():
         
       #lista associando autovalores e autovetores  
       valvec = []  
-      for jj in range(vals):
+      for jj in range(len(vals)):
             im_val = np.imag(vals[jj])
             valvec.append([jj, vals[jj], im_val])
             
@@ -203,7 +204,6 @@ class LIAproblem2D():
           File(self.respath+"evec_u_"+str(i+1)+".pvd") << u
           File(self.respath+"evec_p_"+str(i+1)+".pvd") << p
       
-      return(max(abs_vals))
     
     
        # Compute k eigenvalues/vectors   
@@ -252,7 +252,7 @@ class LIAproblem2D():
           vals, vecs = la.eigs(A, k=k, M=M, sigma=sigma,  ncv=ncv, maxiter=40, tol=10e-10) 
 
           im_vals1 = [] 
-          for jj in range(vals):
+          for jj in range(len(vals)):
                 im_vals1.append(np.imag(vals[jj]))
 
           max_im_val = max(im_vals1)
@@ -335,7 +335,6 @@ class LIAproblem2D():
           #plt.show()
           plt.savefig('u_mag{0}.png'.format(t))
           
-          grid_u_x, grid_u_y = interpolator.gradient(grid_x, grid_y)
           #fig.savefig('fig{0}.jpg'.format(t))
           
       File(dnspath+"solution.xml") << up.vector()
