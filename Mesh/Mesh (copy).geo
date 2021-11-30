@@ -1,15 +1,15 @@
 // dimensions
 
-x1=-0.5;  	// first (inner) rectangle			
-x2=0.5;
-y1=0.5;
-y2=-0.5;					
+x1=-1.0;  	// first (inner) rectangle			
+x2=0.0;
+y1=1.0;
+y2=-1.0;					
 
 
-X1=-1.0;  	// second (box boundary) rectangle			
-X2=1.0;
-Y1=1.0;
-Y2=-1.0;
+X1=-2.;  	// second (box boundary) rectangle			
+X2=0.;
+Y1=2.;
+Y2=-2.;
 
 
 xc=-0.25;
@@ -22,10 +22,10 @@ Rc=0.01;
 
 
 // resolutions
-resolutionc=0.025;
-r1=0.01;
-r2=0.02;
-r3=0.1;
+//resolutionc=0.025;
+r1=0.02;
+r2=0.04;
+r3=0.2;
 
 
 // first (inner) rectangle
@@ -60,9 +60,10 @@ Line(3) = {3,4};
 Line(4) = {4,1};
 // second rectangle (box boundary)
 Line(5) = {5,6};
-Line(6) = {6,7};
-Line(7) = {7,8};
-Line(8) = {8,5};
+Line(6) = {6,2};
+Line(7) = {3,7};
+Line(8) = {7,8};
+Line(9) = {8,5};
 
 // first cylinder
 //Circle(9) = {10,9,11};
@@ -77,13 +78,13 @@ Line(8) = {8,5};
 
 
 Line Loop(1) = {1,2,3,4};
-Line Loop(2) = {5,6,7,8};
+Line Loop(2) = {5,6,1,4,3,7,8,9};
 //Line Loop(3) = {9,10,11,12};
 //Line Loop(4) = {13,14,15,16};
 
 
 Plane Surface(1) = {1};	// inner rectangle
-Plane Surface(2) = {2,1};	// second rectangle minus inner rectangle
+Plane Surface(2) = {2};	// second rectangle minus inner rectangle
 //Plane Surface(1) = {1,3,4};	// inner rectangle
 //Plane Surface(2) = {1,2,3,4};	// second rectangle minus inner rectangle
 
