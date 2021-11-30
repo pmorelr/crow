@@ -173,8 +173,8 @@ class LIAproblem2D():
       #lista associando autovalores e autovetores  
       valvec = []  
       for jj in range(vals):
-            abs_val = (np.real(vals[jj])**2 + np.imag(vals[jj])**2)**0.5
-            valvec.append([jj, vals[jj], vecs[jj], abs_val])
+            im_val = np.imag(vals[jj])
+            valvec.append([jj, vals[jj], vecs[jj], im_val])
             
       valvec.sort(key = lambda x: x[3])
       
