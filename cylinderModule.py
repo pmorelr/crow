@@ -208,7 +208,7 @@ class LIAproblem2D():
     
        # Compute k eigenvalues/vectors   
    def eigenvalues_k(self, sigma, k, kk_list):
-    im_vals = []
+    im_val = []
     for kk in kk_list:
         parameters['linear_algebra_backend'] = 'Eigen'
 
